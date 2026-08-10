@@ -18,7 +18,7 @@ def root():
     return {"message": "DocMind AI API is running"}
 
 
-@app.get("/healthy")
+@app.get("/health")
 def healthy():
     return {"status": "healthy"}
 
@@ -31,9 +31,9 @@ def about():
 }
 
 
-# @app.get("/documents/{document_id}")
-# def get_document(document_id: int):
-#     return {"document_id": document_id} 
+@app.get("/documents/{document_id}")
+def get_document(document_id: int):
+    return {"document_id": document_id} 
 
 @app.get("/documents")
 def list_documents(status: str | None = None):

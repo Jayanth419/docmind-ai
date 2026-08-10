@@ -267,3 +267,71 @@ GitHub: https://github.com/Jayanth419
 - Role-based access control
 - Semantic document search
 - Mobile application support
+
+    <!-- WEEK 1 -->
+
+  # DocMind AI
+
+AI-powered document intelligence platform.
+
+## Backend
+
+The backend is built using FastAPI.
+
+## Setup
+
+Create a virtual environment:
+
+python -m venv .venv
+
+Activate on Windows:
+
+.venv\Scripts\Activate
+
+Install dependencies:
+
+python -m pip install -r requirements.txt
+
+## Run
+
+python -m uvicorn app.main:app --reload
+
+## API Documentation
+
+Swagger:
+
+http://127.0.0.1:8000/docs
+
+ReDoc:
+
+http://127.0.0.1:8000/redoc
+
+## Run Tests
+
+pytest
+
+|
+
+<!-- Architecture Review Of #WEEK-1 -->
+
+backend/
+│
+├── app/
+│ ├── **init**.py
+│ │
+│ ├── main.py
+│ │
+│ ├── routes/
+│ │ ├── **init**.py
+│ │ └── documents.py
+│ │
+│ └── schemas/
+│ ├── **init**.py
+│ └── documents.py
+│
+├── tests/
+│ └── test_documents.py
+│
+├── requirements.txt
+├── .gitignore
+└── README.md
