@@ -1,7 +1,13 @@
 from fastapi import FastAPI
 
+from app.database.connection import Base, engine
+from app.database.models import Document
 from app.routes.documents import router as documents_router
 
+print("Registered tables:", Base.metadata.tables.keys())
+print("Database URL:", engine.url)
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="DocMind AI",
