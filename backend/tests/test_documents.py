@@ -25,11 +25,11 @@ def test_health():
 
 
 def test_get_document():
-    response = client.get("/documents/10")
+    response = client.get("/documents/4")
 
     assert response.status_code == 200
 
-    assert response.json()["document_id"] == 10
+    assert response.json()["id"] == 4
 
 
 def test_create_document():
@@ -41,7 +41,7 @@ def test_create_document():
         }
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     data = response.json()
 
@@ -58,3 +58,21 @@ def test_invalid_document():
     )
 
     assert response.status_code == 422
+
+def test_create_document_invalid_title():
+    response = client.post(
+        "/documents",
+        json={
+            "title": "A",
+            "description": "Testing validation",
+        },
+    )
+
+    assert response.status_code == 422
+
+def test_get_missing_document():
+    response = client.get(
+        "/documents/999999"
+    )
+
+    assert response.status_code == 404

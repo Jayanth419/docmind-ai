@@ -1,14 +1,31 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
 
 class DocumentCreate(BaseModel):
-    title: str
-    description: str
+    title: str = Field(
+        min_length=3,
+        max_length=255,
+    )
 
+    description: str = Field(
+        min_length=1,
+        max_length=5000,
+    )
+
+    
 class DocumentUpdate(BaseModel):
-    title: str | None = None
-    description: str | None = None
+    title: str | None = Field(
+        default=None,
+        min_length=3,
+        max_length=255,
+    )
+
+    description: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=5000,
+    )
 
 
 class DocumentResponse(BaseModel):
@@ -19,5 +36,6 @@ class DocumentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True
+        )

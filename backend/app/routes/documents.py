@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from starlette import status
 
 from app.database.connection import get_db
 from app.database.models import Document
@@ -26,7 +27,7 @@ def get_document(
 
     if not document:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Document not found",
         )
 
@@ -38,18 +39,22 @@ def get_document(
     }
 
 
-@router.get("")
+@router.get(
+        "",
+    response_model=list[DocumentResponse],
+)
 def list_documents(
-    status: str | None = None,
+    status_filter: str | None = None,
     limit: int = 10,
+    offset: int = 10,
     db: Session = Depends(get_db),
 ):
     query = db.query(Document)
 
-    if status:
-        query = query.filter(Document.status == status)
+    if status_filter:
+        query = query.filter(Document.status == status_filter)
 
-    documents = query.limit(limit).all()
+    documents = query.limit(limit).offset(offset).all()
 
     return [
         {
@@ -57,33 +62,42 @@ def list_documents(
             "title": document.title,
             "description": document.description,
             "status": document.status,
+            "created_at": document.created_at,
+            "updated_at": document.updated_at,
         }
         for document in documents
     ]
 
-@router.post("")
+@router.post(
+        "" ,
+        response_model=DocumentResponse,
+        status_code=status.HTTP_201_CREATED,
+)
 def create_document(
-    document: DocumentCreate,
-    db: Session = Depends(get_db),
+        document_data: DocumentCreate,
+        db: Session = Depends(get_db),
 ):
-    new_document = Document(
-        title=document.title,
-        description=document.description,
+    document = Document(
+        title=document_data.title,
+        description=document_data.description,
     )
 
-    db.add(new_document)
+    db.add(document)
     db.commit()
-    db.refresh(new_document)
+    db.refresh(document)
     return {
-        "id": new_document.id,
-        "title": new_document.title,
-        "description": new_document.description,
-        "status": new_document.status,
+        "id": document.id,
+        "title": document.title,
+        "description": document.description,
+        "status": document.status,
+         "created_at": document.created_at,
+        "updated_at": document.updated_at,
     }
 
 # delete api
 
-@router.delete("/{document_id}")
+@router.delete("/{document_id}",
+               status_code=status.HTTP_204_NO_CONTENT,)
 def delete_document(
     document_id: int,
     db: Session = Depends(get_db),
@@ -96,16 +110,14 @@ def delete_document(
 
     if not document:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Document not found",
         )
 
     db.delete(document)
     db.commit()
 
-    return {
-        "message": "Document deleted successfully"
-    }
+    return None
 
 @router.put(
     "/{document_id}",
@@ -124,7 +136,7 @@ def update_document(
 
     if not document:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Document not found",
         )
 
@@ -155,7 +167,7 @@ def get_document(
 
     if not document:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Document not found",
         )
 
