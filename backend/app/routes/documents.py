@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -82,17 +83,16 @@ def create_document(
         description=document_data.description,
     )
 
-    db.add(document)
-    db.commit()
-    db.refresh(document)
-    return {
-        "id": document.id,
-        "title": document.title,
-        "description": document.description,
-        "status": document.status,
-         "created_at": document.created_at,
-        "updated_at": document.updated_at,
-    }
+    try:
+        db.add(document)
+        db.commit()
+        db.refresh(document)
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise
+
+    return document
 
 # delete api
 
@@ -113,9 +113,12 @@ def delete_document(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Document not found",
         )
-
-    db.delete(document)
-    db.commit()
+    try:
+        db.delete(document)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise
 
     return None
 
@@ -145,9 +148,12 @@ def update_document(
 
     if document_data.description is not None:
         document.description = document_data.description
-
-    db.commit()
-    db.refresh(document)
+    try:
+        db.commit()
+        db.refresh(document)
+    except SQLAlchemyError:
+        db.rollback()
+        raise   
 
     return document
 
