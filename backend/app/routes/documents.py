@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette import status
+from sqlalchemy import select
 
 from app.database.connection import get_db
 from app.database.models import Document
@@ -45,30 +46,39 @@ def get_document(
     response_model=list[DocumentResponse],
 )
 def list_documents(
-    status_filter: str | None = None,
-    limit: int = 10,
-    offset: int = 10,
+    # status_filter: str | None = None,
+    # limit: int = 10,
+    # offset: int = 10,
     db: Session = Depends(get_db),
 ):
-    query = db.query(Document)
+    # query = db.query(Document)
 
-    if status_filter:
-        query = query.filter(Document.status == status_filter)
+    # if status_filter:
+    #     query = query.filter(Document.status == status_filter)
 
-    documents = query.limit(limit).offset(offset).all()
+    # documents = query.limit(limit).offset(offset).all()
+    statement = select(Document)
 
-    return [
-        {
-            "id": document.id,
-            "title": document.title,
-            "description": document.description,
-            "status": document.status,
-            "created_at": document.created_at,
-            "updated_at": document.updated_at,
-        }
-        for document in documents
-    ]
+    # if status:
+    #     statement = statement.where(
+    #         Document.status == starlette.status
+    #     )
 
+    # statement = statement.limit(limit)
+
+    documents = db.scalars(statement).all()
+    # return [
+    #     {
+    #         "id": document.id,
+    #         "title": document.title,
+    #         "description": document.description,
+    #         "status": document.status,
+    #         "created_at": document.created_at,
+    #         "updated_at": document.updated_at,
+    #     }
+    #     for document in documents
+    # ]
+    return documents
 @router.post(
         "" ,
         response_model=DocumentResponse,
