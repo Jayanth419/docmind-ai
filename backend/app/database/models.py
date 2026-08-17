@@ -18,10 +18,16 @@ class Document(Base):
         String(255),
         nullable=False,
     )
+    
 
     description: Mapped[str] = mapped_column(
-        Text,
+        String(225),
         nullable=False,
+    )
+
+    file_name: Mapped[str|None] = mapped_column(
+        String(225),
+        nullable=True,
     )
 
     status: Mapped[str] = mapped_column(

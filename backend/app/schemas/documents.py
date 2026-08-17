@@ -32,6 +32,7 @@ class DocumentResponse(BaseModel):
     id: int
     title: str
     description: str
+    file_name:str| None = None
     status: str
     created_at: datetime
     updated_at: datetime
