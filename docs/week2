@@ -1,0 +1,67 @@
+# DocMind AI — Week 2
+
+## AI Document Intelligence Project
+
+Week 2 focused on building the backend foundation of DocMind AI using FastAPI, SQLAlchemy, PostgreSQL, Alembic, Pydantic, and pytest.
+
+The primary goal was to move from basic Python practice into a structured backend application with database persistence, API endpoints, schema validation, database migrations, and automated tests.
+
+---
+
+# 1. Week 2 Objectives
+
+By the end of Week 2, the following concepts were covered:
+
+- FastAPI application structure
+- API routing
+- Dependency injection
+- Pydantic request and response schemas
+- SQLAlchemy ORM
+- SQLAlchemy 2.x `Mapped` and `mapped_column`
+- PostgreSQL integration
+- Database sessions
+- CRUD operations
+- Alembic migrations
+- Migration versioning
+- Database schema synchronization
+- API response validation
+- pytest
+- FastAPI `TestClient`
+- Debugging backend errors
+- Git and migration safety
+- Production-oriented debugging practices
+
+---
+
+# 2. Project Architecture
+
+The backend currently follows this structure:
+
+```text
+backend/
+│
+├── app/
+│   ├── database/
+│   │   ├── connection.py
+│   │   └── models.py
+│   │
+│   ├── routes/
+│   │   └── documents.py
+│   │
+│   ├── schemas/
+│   │   └── documents.py
+│   │
+│   └── main.py
+│
+├── alembic/
+│   ├── versions/
+│   ├── env.py
+│   └── ...
+│
+├── tests/
+│   └── test_documents.py
+│
+├── alembic.ini
+├── requirements.txt
+└── .env
+```
