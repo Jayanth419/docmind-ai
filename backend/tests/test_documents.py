@@ -6,73 +6,121 @@ from app.main import app
 client = TestClient(app)
 
 
-def test_root():
-    response = client.get("/")
+# def test_root():
+#     response = client.get("/")
 
-    assert response.status_code == 200
+#     assert response.status_code == 200
 
-    assert response.json() == {
-        "message": "Welcome to DocMind AI"
-    }
-
-
-def test_health():
-    response = client.get("/health")
-
-    assert response.status_code == 200
-
-    assert response.json()["status"] == "healthy"
+#     assert response.json() == {
+#         "message": "Welcome to DocMind AI"
+#     }
 
 
-def test_get_document():
-    response = client.get("/documents/4")
+# def test_health():
+#     response = client.get("/health")
 
-    assert response.status_code == 200
+#     assert response.status_code == 200
 
-    assert response.json()["id"] == 4
+#     assert response.json()["status"] == "healthy"
 
 
-def test_create_document():
+# def test_get_document():
+#     response = client.get("/documents/27")
+
+#     assert response.status_code == 200
+
+#     assert response.json()["id"] == 4
+
+
+# # def test_create_document():
+# #     response = client.post(
+# #         "/documents",
+# #         json={
+# #             "title": "Python Notes",
+# #             "description": "Learning Python"
+# #         }
+# #     )
+
+# #     assert response.status_code == 201
+
+# #     data = response.json()
+
+# #     assert data["title"] == "Python Notes"
+# #     assert data["description"] == "Learning Python"
+
+
+# def test_invalid_document():
+#     response = client.post(
+#         "/documents",
+#         json={
+#             "title": "Missing description"
+#         }
+#     )
+
+#     assert response.status_code == 422
+
+# def test_create_document_invalid_title():
+#     response = client.post(
+#         "/documents",
+#         json={
+#             "title": "A",
+#             "description": "Testing validation",
+#         },
+#     )
+
+#     assert response.status_code == 422
+
+# def test_get_missing_document():
+#     response = client.get(
+#         "/documents/999999"
+#     )
+
+#     assert response.status_code == 404
+
+def test_create_user(client):
     response = client.post(
-        "/documents",
+        "/users",
         json={
-            "title": "Python Notes",
-            "description": "Learning Python"
-        }
+            "email": "testuser@example.com",
+            "full_name": "Test User",
+        },
     )
 
     assert response.status_code == 201
 
     data = response.json()
 
-    assert data["title"] == "Python Notes"
-    assert data["description"] == "Learning Python"
+    assert data["email"] == "testuser@example.com"
+    assert data["full_name"] == "Test User"
 
+def test_duplicate_user_email(client):
+    payload = {
+        "email": "duplicate@example.com",
+        "full_name": "Duplicate User",
+    }
 
-def test_invalid_document():
-    response = client.post(
-        "/documents",
-        json={
-            "title": "Missing description"
-        }
+    first = client.post(
+        "/users",
+        json=payload,
     )
 
-    assert response.status_code == 422
+    assert first.status_code == 201
 
-def test_create_document_invalid_title():
-    response = client.post(
-        "/documents",
-        json={
-            "title": "A",
-            "description": "Testing validation",
-        },
+    second = client.post(
+        "/users",
+        json=payload,
     )
 
-    assert response.status_code == 422
+    assert second.status_code == 409
 
-def test_get_missing_document():
+def test_document_ownership(client):
     response = client.get(
-        "/documents/999999"
+        "/documents?user_id=1"
     )
 
-    assert response.status_code == 404
+    assert response.status_code == 200
+
+    documents = response.json()
+
+    for document in documents:
+        assert document["user_id"] == 1

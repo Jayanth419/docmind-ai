@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -24,22 +24,28 @@ router = APIRouter(
     response_model=list[DocumentResponse],
 )
 def list_documents(
-    status: str | None = None,
+    user_id:int,
+    status_filter: str | None = None,
     limit: int = 10,
+    offset:int=0,
     db: Session = Depends(get_db),
 ):
-    statement = select(Document)
+    query = (
+        db.query(Document)
+        .filter(Document.user_id == user_id)
+    )
 
-    if status:
-        statement = statement.where(
-            Document.status == status
+
+    if status_filter:
+        query = query.filter(
+            Document.status == status_filter
         )
-
-    statement = statement.limit(limit)
-
-    documents = db.scalars(statement).all()
-
-    return documents
+    return (
+        query
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
 
 @router.get(
@@ -48,11 +54,15 @@ def list_documents(
 )
 def get_document(
     document_id: int,
+    user_id: int,
     db: Session = Depends(get_db),
 ):
     document = (
         db.query(Document)
-        .filter(Document.id == document_id)
+        .filter(
+            Document.id == document_id,
+            Document.user_id == user_id,
+        )
         .first()
     )
 
@@ -75,8 +85,10 @@ def create_document(
     db: Session = Depends(get_db),
 ):
     document = Document(
+        user_id=document_data.user_id,
         title=document_data.title,
         description=document_data.description,
+        file_name=document_data.file_name
     )
 
     try:
@@ -84,9 +96,13 @@ def create_document(
         db.commit()
         db.refresh(document)
 
-    except SQLAlchemyError:
+    except IntegrityError:
         db.rollback()
-        raise
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid user_id",
+        )
 
     return document
 

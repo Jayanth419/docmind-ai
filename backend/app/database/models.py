@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, String, Text, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.connection import Base
 
@@ -12,6 +12,11 @@ class Document(Base):
     id: Mapped[int] = mapped_column(
         primary_key=True,
         autoincrement=True,
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True,
     )
 
     title: Mapped[str] = mapped_column(
@@ -47,4 +52,39 @@ class Document(Base):
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
         nullable=False,
+    )
+    user: Mapped["User"] = relationship(
+        back_populates="documents"
+    )
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    email: Mapped[str] = mapped_column(
+            String(255),
+            unique=True,
+            nullable=False,
+            index=True,
+    )
+
+    full_name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    documents: Mapped[list["Document"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
     )

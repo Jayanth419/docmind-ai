@@ -3,6 +3,8 @@ from datetime import datetime
 
 
 class DocumentCreate(BaseModel):
+    user_id: int
+
     title: str = Field(
         min_length=3,
         max_length=255,
@@ -13,6 +15,7 @@ class DocumentCreate(BaseModel):
         max_length=5000,
     )
 
+    file_name: str | None = None
     
 class DocumentUpdate(BaseModel):
     title: str | None = Field(
@@ -30,6 +33,7 @@ class DocumentUpdate(BaseModel):
 
 class DocumentResponse(BaseModel):
     id: int
+    user_id: int
     title: str
     description: str
     file_name:str| None = None
