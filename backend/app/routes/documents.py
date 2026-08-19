@@ -1,17 +1,23 @@
+from typing_extensions import Annotated
+
+from app.schemas.auth import Token
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
-
+from app.core.dependencies import get_current_user
 from app.database.connection import get_db
-from app.database.models import Document
+from app.database.models import Document, User
 from app.schemas.documents import (
     DocumentCreate,
     DocumentUpdate,
     DocumentResponse,
 )
-
+from app.core.security import (
+    create_access_token,
+    verify_password,
+)
 
 router = APIRouter(
     prefix="/documents",
@@ -24,7 +30,10 @@ router = APIRouter(
     response_model=list[DocumentResponse],
 )
 def list_documents(
-    user_id:int,
+    current_user: Annotated[
+            User,
+            Depends(get_current_user),
+    ], 
     status_filter: str | None = None,
     limit: int = 10,
     offset:int=0,
@@ -32,7 +41,7 @@ def list_documents(
 ):
     query = (
         db.query(Document)
-        .filter(Document.user_id == user_id)
+        .filter(Document.user_id == current_user.id)
     )
 
 
@@ -47,6 +56,18 @@ def list_documents(
         .all()
     )
 
+@router.get("/me")
+def read_current_user(
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+):
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+    }
 
 @router.get(
     "/{document_id}",
@@ -54,14 +75,14 @@ def list_documents(
 )
 def get_document(
     document_id: int,
-    user_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     document = (
         db.query(Document)
         .filter(
             Document.id == document_id,
-            Document.user_id == user_id,
+            Document.user_id == current_user.id,
         )
         .first()
     )
@@ -82,10 +103,11 @@ def get_document(
 )
 def create_document(
     document_data: DocumentCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     document = Document(
-        user_id=document_data.user_id,
+        user_id=current_user.id,
         title=document_data.title,
         description=document_data.description,
         file_name=document_data.file_name

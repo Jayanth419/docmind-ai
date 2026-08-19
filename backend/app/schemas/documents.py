@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class DocumentCreate(BaseModel):
-    user_id: int
+    # user_id: int
 
     title: str = Field(
         min_length=3,
