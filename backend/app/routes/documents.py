@@ -29,14 +29,11 @@ router = APIRouter(
     "",
     response_model=list[DocumentResponse],
 )
-def list_documents(
-    current_user: Annotated[
-            User,
-            Depends(get_current_user),
-    ], 
+def list_documents( 
     status_filter: str | None = None,
     limit: int = 10,
     offset:int=0,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     query = (
@@ -136,11 +133,15 @@ def create_document(
 def update_document(
     document_id: int,
     document_data: DocumentUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     document = (
         db.query(Document)
-        .filter(Document.id == document_id)
+        .filter(
+            Document.id == document_id,
+            Document.user_id == current_user.id
+        )
         .first()
     )
 
@@ -173,11 +174,15 @@ def update_document(
 )
 def delete_document(
     document_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     document = (
         db.query(Document)
-        .filter(Document.id == document_id)
+        .filter(
+            Document.id == document_id,
+            Document.user_id == current_user.id
+        )
         .first()
     )
 

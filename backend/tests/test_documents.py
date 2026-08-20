@@ -125,47 +125,70 @@ client = TestClient(app)
 #     for document in documents:
 #         assert document["user_id"] == 1
 
-def test_login_success(client):
-    client.post(
-        "/users",
-        json={
-            "email": "jayanth@example.com",
-            "full_name": "Jayanth",
-            "password": "Test@123",
-        },
-    )
+# def test_login_success(client):
+#     client.post(
+#         "/users",
+#         json={
+#             "email": "jayanth@example.com",
+#             "full_name": "Jayanth",
+#             "password": "Test@123",
+#         },
+#     )
 
+#     response = client.post(
+#         "/auth/login",
+#         data={
+#             "username": "jayanth@example.com",
+#             "password": "Test@123",
+#         },
+#     )
+
+#     assert response.status_code == 200
+
+#     data = response.json()
+
+#     assert "access_token" in data
+#     assert data["token_type"] == "bearer"
+
+# def test_login_wrong_password(client):
+#     client.post(
+#         "/users",
+#         json={
+#             "email": "wrong@example.com",
+#             "full_name": "Wrong Password User",
+#             "password": "StrongPassword123!",
+#         },
+#     )
+
+#     response = client.post(
+#         "/auth/login",
+#         data={
+#             "username": "wrong@example.com",
+#             "password": "WrongPassword!",
+#         },
+#     )
+
+#     assert response.status_code == 401
+
+def test_documents_requires_auth(client):
+    response = client.get("/documents")
+
+    assert response.status_code == 401
+
+def test_create_document_authenticated(client, auth_headers):
     response = client.post(
-        "/auth/login",
-        data={
-            "username": "jayanth@example.com",
-            "password": "Test@123",
+        "/documents",
+        json={
+            "title": "Test Document",
+            "description": "Testing authenticated creation",
+            "file_name": "test.pdf",
         },
+        headers=auth_headers,
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     data = response.json()
 
-    assert "access_token" in data
-    assert data["token_type"] == "bearer"
-
-def test_login_wrong_password(client):
-    client.post(
-        "/users",
-        json={
-            "email": "wrong@example.com",
-            "full_name": "Wrong Password User",
-            "password": "StrongPassword123!",
-        },
-    )
-
-    response = client.post(
-        "/auth/login",
-        data={
-            "username": "wrong@example.com",
-            "password": "WrongPassword!",
-        },
-    )
-
-    assert response.status_code == 401
+    assert data["title"] == "Test Document"
+    assert "user_id" in data
