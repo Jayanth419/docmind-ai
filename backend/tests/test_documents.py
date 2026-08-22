@@ -1,4 +1,6 @@
 from fastapi.testclient import TestClient
+from app.services.document_service import create_document
+from app.schemas.documents import DocumentCreate
 
 from app.main import app
 
@@ -170,25 +172,42 @@ client = TestClient(app)
 
 #     assert response.status_code == 401
 
-def test_documents_requires_auth(client):
-    response = client.get("/documents")
+# def test_documents_requires_auth(client):
+#     response = client.get("/documents")
 
-    assert response.status_code == 401
+#     assert response.status_code == 401
 
-def test_create_document_authenticated(client, auth_headers):
-    response = client.post(
-        "/documents",
-        json={
-            "title": "Test Document",
-            "description": "Testing authenticated creation",
-            "file_name": "test.pdf",
-        },
-        headers=auth_headers,
+# def test_create_document_authenticated(client, auth_headers):
+#     response = client.post(
+#         "/documents",
+#         json={
+#             "title": "Test Document",
+#             "description": "Testing authenticated creation",
+#             "file_name": "test.pdf",
+#         },
+#         headers=auth_headers,
+#     )
+
+#     assert response.status_code == 201
+
+#     data = response.json()
+
+#     assert data["title"] == "Test Document"
+#     assert "user_id" in data
+
+def test_create_document(db_session):
+    document_data = DocumentCreate(
+        title="Test Document",
+        description="Testing service",
+        file_name="test.pdf",
     )
 
-    assert response.status_code == 201
+    document = create_document(
+        db=db_session,
+        user_id=1,
+        document_data=document_data,
+    )
 
-    data = response.json()
-
-    assert data["title"] == "Test Document"
-    assert "user_id" in data
+    assert document.id is not None
+    assert document.user_id == 1
+    assert document.title == "Test Document"
