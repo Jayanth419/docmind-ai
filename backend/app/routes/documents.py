@@ -1,5 +1,6 @@
 from typing_extensions import Annotated
 from app.services import document_service
+from fastapi import Query
 
 from app.schemas.auth import Token
 from fastapi import APIRouter, Depends, HTTPException
@@ -32,8 +33,15 @@ router = APIRouter(
 )
 def list_documents(
     status_filter: str | None = None,
-    limit: int = 10,
-    offset: int = 0,
+    limit: int = Query(
+        default=10,
+        ge=1,
+        le=100,
+    ),
+    offset: int = Query(
+        default=0,
+        ge=0,
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.database.models import Document
 from app.schemas.documents import DocumentCreate
@@ -15,11 +17,13 @@ def create_document(
         description=document_data.description,
         file_name=document_data.file_name,
     )
-
-    db.add(document)
-    db.commit()
-    db.refresh(document)
-
+    try:
+        db.add(document)
+        db.commit()
+        db.refresh(document)
+    except SQLAlchemyError:
+        db.rollback()
+        raise
     return document
 
 def get_document(
@@ -27,14 +31,14 @@ def get_document(
     document_id: int,
     user_id: int,
 ) -> Document | None:
-    return (
-        db.query(Document)
-        .filter(
+    statement = (
+        select(Document)
+        .where(
             Document.id == document_id,
             Document.user_id == user_id,
         )
-        .first()
     )
+    return db.execute(statement).scalar_one_or_none()
 
 def list_documents(
     db: Session,
@@ -44,22 +48,27 @@ def list_documents(
     offset: int = 0,
 ) -> list[Document]:
 
-    query = (
-        db.query(Document)
-        .filter(
-            Document.user_id == user_id
-        )
+    statement = (
+        select(Document)
+        .where(
+            Document.user_id == user_id)
     )
 
+        
+
     if status_filter:
-        query = query.filter(
+        statement = statement.where(
             Document.status == status_filter
         )
-
-    return (
-        query
+    statement = (
+        statement
         .offset(offset)
         .limit(limit)
+    )
+
+    return (
+        db.execute(statement)
+        .scalars()
         .all()
     )
 def update_document(
