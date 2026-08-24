@@ -1,9 +1,20 @@
+from pathlib import Path
 import os
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+STORAGE_DIR = Path(
+    os.getenv(
+        "STORAGE_DIR",
+        str(BASE_DIR / "storage"),
+    )
+)
+
+DOCUMENT_STORAGE_DIR = STORAGE_DIR / "documents"
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 if not SECRET_KEY:

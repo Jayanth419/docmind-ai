@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from app.services.document_service import create_document
 from app.schemas.documents import DocumentCreate
-
+from io import BytesIO
 from app.main import app
 
 
@@ -211,3 +211,20 @@ def test_create_document(db_session):
     assert document.id is not None
     assert document.user_id == 1
     assert document.title == "Test Document"
+def test_upload_pdf(client, auth_headers):
+
+    response = client.post(
+        "/documents/upload",
+        files={
+            "file": (
+                "test.pdf",
+                BytesIO(
+                    b"%PDF-1.4 test content"
+                ),
+                "application/pdf",
+            )
+        },
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 201

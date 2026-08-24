@@ -1,7 +1,9 @@
 from typing_extensions import Annotated
 from app.services import document_service
-from fastapi import Query
-
+from fastapi import Query, File, UploadFile
+from app.core.config import DOCUMENT_STORAGE_DIR
+from app.services.storage_service import StorageService
+from app.services import document_upload_service
 from app.schemas.auth import Token
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -155,3 +157,31 @@ def delete_document(
         )
 
     return None
+
+@router.post(
+    "/upload",
+    response_model=DocumentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def upload_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    storage = StorageService(
+        DOCUMENT_STORAGE_DIR
+    )
+
+    try:
+        return document_upload_service.upload_document(
+            db=db,
+            storage=storage,
+            user_id=current_user.id,
+            file=file,
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
