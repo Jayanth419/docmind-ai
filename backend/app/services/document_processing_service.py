@@ -1,4 +1,7 @@
 from pathlib import Path
+from app.services.text_chunking_service import (
+    TextChunkingService,
+)
 
 from app.services.text_cleaning_service import (
     TextCleaningService,
@@ -14,12 +17,13 @@ class DocumentProcessingService:
         self,
         text_extraction_service: TextExtractionService,
         text_cleaning_service: TextCleaningService,
+        text_chunking_service: TextChunkingService,
     ):
         self.text_extraction_service = (
             text_extraction_service
         )
         self.text_cleaning_service = text_cleaning_service
-
+        self.text_chunking_service = text_chunking_service
     def process_pdf(
         self,
         file_path: Path,
@@ -27,14 +31,23 @@ class DocumentProcessingService:
         pages = self.text_extraction_service.extract_pdf(
             file_path
         )
-        cleaned_pages = []
+        chunks = []
+
         for page in pages:
-            cleanesd_text = (self.text_cleaning_service.clean
-                (page.text)
+
+            cleaned_text = (
+                self.text_cleaning_service
+                .clean(page.text)
             )
-            if cleanesd_text:  # Only add non-empty cleaned texts
-                cleaned_pages.append({
-                    "page_number": page.page_number,
-                    "text": cleanesd_text,
-                })
-        return cleaned_pages
+
+            page_chunks = (
+                self.text_chunking_service
+                .chunk_text(
+                    text=cleaned_text,
+                    page_number=page.page_number,
+                )
+            )
+
+            chunks.extend(page_chunks)
+
+        return chunks
