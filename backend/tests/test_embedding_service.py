@@ -139,3 +139,14 @@ def test_batch_embeddings():
         len(embedding) == vector_dimension
         for embedding in embeddings
     )
+
+from app.services.embedding_service import EmbeddingService
+
+
+service = EmbeddingService()
+
+embedding = service.generate_embedding(
+    "DocMind AI"
+)
+
+print(len(embedding))
