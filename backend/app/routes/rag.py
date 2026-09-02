@@ -22,11 +22,11 @@ def ask_question(
     request: QuestionRequest,
     db: Session = Depends(get_db),
 ):
-    # Use your existing authentication dependency here.
-    # For example, you might get the user ID from the access token.
+    # Temporary user ID for testing.
+    # Replace with your authentication dependency later.
     user_id = 11
 
-    answer = rag_service.answer_question(
+    result = rag_service.answer_question(
         db=db,
         user_id=user_id,
         question=request.question,
@@ -34,5 +34,6 @@ def ask_question(
     )
 
     return QuestionResponse(
-        answer=answer
+        answer=result["answer"],
+        sources=result["sources"],
     )

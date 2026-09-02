@@ -12,10 +12,17 @@ class VectorSearchService:
         user_id: int,
         query_embedding: list[float],
         limit: int = 5,
-    ) -> list[DocumentChunk]:
+    ):
+
+        distance = DocumentChunk.embedding.cosine_distance(
+            query_embedding
+        ).label("distance")
 
         statement = (
-            select(DocumentChunk)
+            select(
+                DocumentChunk,
+                distance,
+            )
             .join(
                 Document,
                 Document.id == DocumentChunk.document_id,
@@ -24,16 +31,8 @@ class VectorSearchService:
                 Document.user_id == user_id,
                 DocumentChunk.embedding.is_not(None),
             )
-            .order_by(
-                DocumentChunk.embedding.cosine_distance(
-                    query_embedding
-                )
-            )
+            .order_by(distance)
             .limit(limit)
         )
 
-        return list(
-            db.scalars(statement).all()
-        )
-
-vector_search_service = VectorSearchService()
+        return db.execute(statement).all()  

@@ -15,6 +15,14 @@ class QuestionRequest(BaseModel):
     )
 
 
+class SourceResponse(BaseModel):
+
+    document_id: int
+    chunk_id: int
+    page_number: int | None
+
+
 class QuestionResponse(BaseModel):
 
     answer: str
+    sources: list[SourceResponse]
