@@ -39,6 +39,14 @@ class RAGService:
                 limit=limit,
             )
         )
+        for chunk, distance in results:
+            print(
+                f"Retrieved chunk ID: {chunk.id}, "
+                f"Document ID: {chunk.document_id}, "
+                f"Page: {chunk.page_number}, "
+                f"Distance: {distance:.4f}"
+                f"Text: {chunk.text[:50]}..."  # Print first 50 characters of the text
+            )
 
         return results
 
@@ -155,17 +163,3 @@ print("RAG SERVICE METHODS:", dir(rag_service))
 
 
 
-for chunk, distance in results:
-
-    print(
-        f"""
-RETRIEVED CHUNK
-----------------
-Chunk ID: {chunk.id}
-Document ID: {chunk.document_id}
-Page: {chunk.page_number}
-Distance: {distance}
-Text: {chunk.text}
-----------------
-"""
-    )
