@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
+from app.schemas.summary import SummaryResponse
 from app.services.summary_service import summary_service
 
 
@@ -11,28 +12,33 @@ router = APIRouter(
 )
 
 
-@router.post("/{document_id}")
-def summarize_document(
+@router.post(
+    "/structured/{document_id}",
+    response_model=SummaryResponse,
+)
+def structured_summary(
     document_id: int,
     db: Session = Depends(get_db),
 ):
     try:
-        # Temporary implementation for Day 31.
-        # We will connect this to the document database
-        # in the next integration step.
+        # Temporary Day 32 test data.
+        # We will replace this with real document chunks
+        # during the integration phase.
 
-        chunks = [
-            "Employees receive twenty days of annual leave.",
-            "Employees request vacation through the HR portal.",
-            "PostgreSQL is used for relational database storage.",
-        ]
+        text = """
+        The company was founded in 2018.
 
-        summary = summary_service.summarize_document(chunks)
+        It currently has 350 employees.
 
-        return {
-            "document_id": document_id,
-            "summary": summary,
-        }
+        Employees receive 20 days of annual leave.
+
+        Vacation requests must be submitted through
+        the HR portal.
+
+        The annual leave policy was updated in January 2026.
+        """
+
+        return summary_service.summarize_structured(text)
 
     except ValueError as exc:
         raise HTTPException(
