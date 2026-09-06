@@ -23,7 +23,23 @@ class OpenRouterService:
     def generate_answer(
         self,
         prompt: str,
-) -> str:
+        response_format: str | None = None,
+    ) -> str:
+
+        payload = {
+            "model": "google/gemma-4-26b-a4b-it",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+        }
+
+        if response_format == "json":
+            payload["response_format"] = {
+                "type": "json_object"
+            }
 
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
@@ -31,15 +47,7 @@ class OpenRouterService:
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
             },
-            json={
-                "model": "google/gemma-4-26b-a4b-it",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ],
-            },
+            json=payload,
             timeout=60,
         )
 

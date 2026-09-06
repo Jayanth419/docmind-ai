@@ -91,7 +91,9 @@ Json:
 
         prompt = self.build_chunk_summary_prompt(text)
 
-        response = self.openrouter_service.generate_answer(prompt)
+        response = self.openrouter_service.generate_answer(
+            prompt, response_format="json"
+        )
 
         return self.parse_structured_summary(response)
 

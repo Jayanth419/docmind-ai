@@ -7,6 +7,7 @@ from app.routes.users import router as users_router
 from app.routes.auth import router as auth_router
 from app.routes.rag import router as rag_router
 from app.routes.summary import router as summary_router
+from app.routes.insights import router as insights_router
 
 print("Registered tables:", Base.metadata.tables.keys())
 print("Database URL:", engine.url)
@@ -39,3 +40,4 @@ app.include_router(documents_router)
 app.include_router(auth_router)
 app.include_router(rag_router)
 app.include_router(summary_router)
+app.include_router(insights_router)
